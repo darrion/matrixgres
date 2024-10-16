@@ -2,6 +2,68 @@ import psycopg2
 
 from model import Matrix
 
+def create(matrix_name, matrix_data):
+    """
+    Generate a CREATE TABLE statement for a matrix and create a Matrix object.
+
+    Parameters:
+        matrix_name (str): The name of the matrix.
+        matrix_data (list of list of float): The matrix data as a list of rows.
+
+    Returns:
+        tuple: (CREATE TABLE SQL statement, Matrix object)
+    """
+    # Get the dimensions of the matrix
+    num_rows = len(matrix_data)
+    num_cols = len(matrix_data[0]) if num_rows > 0 else 0
+
+    # Create the CREATE TABLE SQL statement
+    create_table_sql = f"CREATE TABLE {matrix_name} (\n"
+    create_table_sql += ",\n".join([f"c{i + 1} DOUBLE PRECISION" for i in range(num_cols)]) + "\n);"
+
+    # Create the Matrix object
+    matrix_obj = Matrix(matrix_name, (num_rows, num_cols))
+
+    return create_table_sql, matrix_obj
+
+def update(matrix_name, matrix_data):
+    """
+    Generate SQL statements to replace all data in a matrix table.
+
+    Parameters:
+        matrix_name (str): The name of the matrix table.
+        matrix_data (list of list of float): The matrix data as a list of rows.
+
+    Returns:
+        str: The combined SQL statements for deleting existing data and inserting new data.
+    """
+    # Get the number of columns based on the first row of the matrix data
+    num_cols = len(matrix_data[0]) if len(matrix_data) > 0 else 0
+
+    # Generate the column names (c1, c2, ..., cn)
+    column_names = ", ".join([f"c{i + 1}" for i in range(num_cols)])
+
+    # Generate the values for each row
+    value_rows = []
+    for row in matrix_data:
+        # Format each row as a string of comma-separated values
+        values = ", ".join([str(value) for value in row])
+        value_rows.append(f"({values})")
+
+    # Join all value rows with commas
+    values_clause = ",\n".join(value_rows)
+
+    # Create the DELETE statement to remove all existing data
+    delete_sql = f"DELETE FROM {matrix_name};"
+
+    # Create the INSERT INTO SQL statement to add the new data
+    insert_sql = f"INSERT INTO {matrix_name} ({column_names}) VALUES\n{values_clause};"
+
+    # Combine both statements
+    replace_sql = f"{delete_sql}\n{insert_sql}"
+
+    return replace_sql
+
 def get_matrix_dimensions(conn, matrix_name):
     # Retrieve the number of columns (width) from the matrix table
     with conn.cursor() as cur:

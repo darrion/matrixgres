@@ -1,6 +1,7 @@
 import psycopg2
 from psycopg2 import sql
 from contextlib import contextmanager
+from api import create, update
 
 @contextmanager
 def get_db_connection(dbname, user, password, host="localhost", port="5432"):
@@ -39,9 +40,9 @@ def get_db_connection(dbname, user, password, host="localhost", port="5432"):
 if __name__ == "__main__":
     # Database configuration
     db_config = {
-        "dbname": "your_database_name",
-        "user": "your_username",
-        "password": "your_password",
+        "dbname": "postgres",
+        "user": "postgres",
+        "password": "admin",
         "host": "localhost",
         "port": "5432"
     }
@@ -51,3 +52,20 @@ if __name__ == "__main__":
         print("Connected to the database successfully!")
         # You can now use conn to execute queries, etc.
         # e.g., with conn.cursor() as cur: cur.execute("SELECT 1")
+        # Example usage
+        matrix_name = "matrixA"
+        matrix_data = [
+            [1.0, 2.0, 3.0],
+            [4.0, 5.0, 6.0],
+            [7.0, 8.0, 9.0]
+        ]
+
+        create_table_sql, matrix_obj = create(matrix_name, matrix_data)
+        update_sql = update(matrix_name, matrix_data)
+        print("Generated CREATE TABLE statement:")
+        print(create_table_sql)
+        print("\nMatrix object:")
+        print(f"Name: {matrix_obj.name}, Dimensions: {matrix_obj.dim}")
+        print("Generate SQL to update matrix values:")
+        print(update_sql)
+        
