@@ -31,7 +31,7 @@ def generate_matrix_multiplication_sql(A: Matrix, B: Matrix, C: Matrix):
     # Generate the multiplication SQL query
     select_clauses = []
     for j in range(num_cols_B):  # Columns in matrixB
-        clause = " + ".join([f"a.c{i + 1} * b.c{j + 1}" for i in range(num_cols_A)])
+        clause = " + ".join([f"(a.c{i + 1} * b.c{j + 1})" for i in range(num_cols_A)])
         select_clauses.append(f"SUM({clause}) AS c{j + 1}")
 
     insert_sql = f"INSERT INTO {C.get_name()} ({', '.join([f'c{i + 1}' for i in range(num_cols_B)])})\n"
